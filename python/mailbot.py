@@ -11,10 +11,7 @@ chatchannel = '#cochiselinux' #set channel to connect to
 port = 6667  #set port number
 end = '\n'
 
-
-#Variables
-
-
+#IRC setup
 premess = 'PRIVMSG ' + chatchannel + ' :'
 irc = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
 irc.connect( ( network, port ) )
@@ -23,12 +20,8 @@ irc.send( 'NICK ' + botname + end )
 irc.send( 'USER ' + USER + 'bot botty bot bot: Python IRC' + end )
 irc.send( 'JOIN ' + chatchannel + end )
 
-#mail parsing
 
-
-#
 # Helper Functions
-#
 def irc_msg(msg):
     """Sends msg to channel"""
     irc.send(premess + msg + end)
@@ -43,7 +36,7 @@ def getuser():
     return user
 
 #
-# GitHub  code from elimisteve, thanks!
+# GitHub code from elimisteve, thanks!
 #
 account_name = 'cochiselinuxusersgroup'
 branch = 'master'
@@ -55,9 +48,7 @@ def check_github():
             'https://github.com/' + account_name +
             '/' + repo + '/commits/' + branch + '.atom'
             )
-
-#    time.sleep(SLEEP_SECONDS)  # Wait then compare
-
+            
     for repo in repo_names:
         new = feedparser.parse('https://github.com/' + account_name +
                                '/' + repo + '/commits/' + branch + '.atom')
@@ -73,37 +64,52 @@ def check_github():
             print "GitHub fucked up, I think. Here's what they gave us:"
             print new
 
-#Mail function       
+# Mail function       
 def check_mail():
 	new_mail = feedparser.parse("https://www.freelists.org/feed/cochiselinux")
 	mail_msg = new_mail.entries[0].title
 	irc_msg( mail_msg )
 	return
+	
+# Calendar functions
+def calendar():
+	calendar = feedparser.parse("https://www.google.com/calendar/feeds/fp9et4ecr2c131rth7ftvfua1g%40group.calendar.google.com/public/basic")
+	latest_ev = calendar.entries[0].title
+	latest_sum = calendar.entries[0].summary
+	if '&nbsp;' in latest_sum:
+		print 'Stripping'
+		stripped_sum = latest_sum.replace('&nbsp;', '')
+		irc_msg( '[Next CLUG event]: ' + latest_ev + ' | ' + stripped_sum )
+	else:
+		irc_msg( '[Next CLUG event]: ' + latest_ev + ' | ' + latest_sum )
+	return
+	
 			
-#weather function			
+# Weather function			
 def check_weather():		
 	weather = pywapi.get_weather_from_noaa('KFHU') #setup weather results ('location')
 	irc_msg("Sierra Vista current weather: " + weather['temp_f'] + "F and " + weather['weather'])
 	return
 	
-#information function
+# Information function
 def info():
 	website = "CochiseLinuxUsersGroup.github.io"  #CLUG website
 	mailing = "https://www.freelists.org/feed/cochiselinux" #CLUG mailing list feed
 	irc_msg( 'Website: ' + website )
 	irc_msg( 'Mailing archive: ' + mailing )
 	
-#help function
+# Help function
 def irchelp():
 	irc_msg( "Available commands: ")
 	irc_msg( "!info - Show website and mailing information")
 	irc_msg( "!lastmail - Show the title of the latest email to the mailing list")
 	irc_msg( "!lastpush - Show the last commits to github repos")
 	irc_msg( "!weather - Show current weather in sierra vista")
+	irc_msg( "!nextevent - Show the next calendar event")
 	irc_msg( "more to come")
 	return
 		
-#Main Loop
+# Main Loop
 while True:
 	data = irc.recv ( 4096 )
 	datasp = data.split(' :')[0]
@@ -134,7 +140,8 @@ while True:
 	if ':!weather' in data.lower(): #Weather function
 		print data
 		check_weather()
-
-
 		
+	if ':!nextevent' in data.lower():
+		print data
+		calendar()
 
