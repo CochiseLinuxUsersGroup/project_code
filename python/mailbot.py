@@ -15,11 +15,11 @@ end = '\n'
 #Variables
 website = "CochiseLinuxUsersGroup.github.io"  #CLUG website
 mailing = "https://www.freelists.org/feed/cochiselinux" #CLUG mailing list feed
-ghubr1 = "https://github.com/CochiseLinuxUsersGroup/CochiseLinuxUsersGroup.github.io/commits/master.atom" #github feed
-ghubr2 = "https://github.com/CochiseLinuxUsersGroup/projectcode/commits/master.atom" #github feed
-d = feedparser.parse(mailing) #setup parsing for mailing list
-ghun1d = feedparser.parse(ghubr1) #setup parsing for github
-ghun2d = feedparser.parse(ghubr2) #setup parsing for github
+#ghubr1 = "https://github.com/CochiseLinuxUsersGroup/CochiseLinuxUsersGroup.github.io/commits/master.atom" #github feed
+#ghubr2 = "https://github.com/CochiseLinuxUsersGroup/projectcode/commits/master.atom" #github feed
+#d = feedparser.parse(mailing) #setup parsing for mailing list
+#ghun1d = feedparser.parse(ghubr1) #setup parsing for github
+#ghun2d = feedparser.parse(ghubr2) #setup parsing for github
 result = pywapi.get_weather_from_noaa('KFHU') #setup weather results ('location')
 
 premess = 'PRIVMSG ' + chatchannel + ' :'
@@ -85,8 +85,7 @@ def check_github():
             print new
 
 
-#Need to fix currently causes a flood
-"""            
+#There is a delay here for some reason.          
 def check_mail():
 	mail_old = {}
 	for mail in mailing:
@@ -97,18 +96,13 @@ def check_mail():
 		
 		try:
 			if ':!lastmail' in data.lower():
-				#author = new_mail.entries[0].author_detail.href.split('/')[-1]
 				mail_msg = new_mail.entries[0].title
-				len(new_mail['entries'])
-				print '\n'
-				print new_mail['entries'][0]['title']
-				print '\n'
-				irc_msg( new_mail.feed.title )
-				irc_msg( new_mail['entries'][0]['title'] )
+				irc_msg( mail_msg )
+				return
 		except:
 			print "Do da"
 			print new_mail
-"""
+
 
 #Main Loop
 while True:
@@ -128,11 +122,12 @@ while True:
 		
 	#Show last email title
 	#I want to make this more verbose
-	if ':!lastmail' in data.lower():
-		len(d['entries'])
-		irc_msg( 'Latest mail: ')
-		irc_msg( d.feed.title )
-		irc_msg( d['entries'][0]['title'] )
+	#Moved to for loop, if that breaks uncomment this ( bot will have to be restarted to update last mail if used this way )
+#	if ':!lastmail' in data.lower():
+#		len(d['entries'])
+#		irc_msg( 'Latest mail: ')
+#		irc_msg( d.feed.title )
+#		irc_msg( d['entries'][0]['title'] )
 	
 	
 	#Show current weather in SV	
@@ -150,8 +145,7 @@ while True:
 	
 	print data
 	check_github()
-	
-#	print data
-#	check_mail()
+	check_mail()
+
 		
 
