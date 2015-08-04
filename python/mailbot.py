@@ -13,14 +13,7 @@ end = '\n'
 
 
 #Variables
-website = "CochiseLinuxUsersGroup.github.io"  #CLUG website
-mailing = "https://www.freelists.org/feed/cochiselinux" #CLUG mailing list feed
-#ghubr1 = "https://github.com/CochiseLinuxUsersGroup/CochiseLinuxUsersGroup.github.io/commits/master.atom" #github feed
-#ghubr2 = "https://github.com/CochiseLinuxUsersGroup/projectcode/commits/master.atom" #github feed
-#d = feedparser.parse(mailing) #setup parsing for mailing list
-#ghun1d = feedparser.parse(ghubr1) #setup parsing for github
-#ghun2d = feedparser.parse(ghubr2) #setup parsing for github
-result = pywapi.get_weather_from_noaa('KFHU') #setup weather results ('location')
+
 
 premess = 'PRIVMSG ' + chatchannel + ' :'
 irc = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
@@ -44,8 +37,6 @@ def irc_msg(msg):
 def getuser():
     """Returns nick of current message author"""
     try:
-        #user = data.split()[2].strip(':')
-        #user = data.split()[0].split('~')[0].strip(':!')
         user = data.split()[0].split('!')[0].strip(':')
     except:
         user = data.split('!')[0].strip(':')
@@ -57,8 +48,6 @@ def getuser():
 account_name = 'cochiselinuxusersgroup'
 branch = 'master'
 repo_names = ['cochiselinuxusersgroup.github.io', 'projectcode']
-SLEEP_SECONDS = float(60*2.4)/len(repo_names)  # Check each repo once/couple minutes
-
 def check_github():
     old_version = {}
     for repo in repo_names:
@@ -73,37 +62,47 @@ def check_github():
         new = feedparser.parse('https://github.com/' + account_name +
                                '/' + repo + '/commits/' + branch + '.atom')
         try:
-            if ':!lastpush' in data.lower():
-				author = new.entries[0].author_detail.href.split('/')[-1]
-				commit_msg = new.entries[0].title
-				print '\n'
-				print"[" + repo + "] " + author + ": " + commit_msg
-				print '\n'
-				irc_msg("[" + repo + "] " + author + ": " + commit_msg)
+			author = new.entries[0].author_detail.href.split('/')[-1]
+			commit_msg = new.entries[0].title
+			print '\n'
+			print"[" + repo + "] " + author + ": " + commit_msg
+			print '\n'
+			irc_msg("[" + repo + "] " + author + ": " + commit_msg)
+			
         except:
             print "GitHub fucked up, I think. Here's what they gave us:"
             print new
 
-
-#There is a delay here for some reason.          
+#Mail function       
 def check_mail():
-	mail_old = {}
-	for mail in mailing:
-		mail_old[mailing] = feedparser.parse("https://www.freelists.org/feed/cochiselinux")
+	new_mail = feedparser.parse("https://www.freelists.org/feed/cochiselinux")
+	mail_msg = new_mail.entries[0].title
+	irc_msg( mail_msg )
+	return
+			
+#weather function			
+def check_weather():		
+	weather = pywapi.get_weather_from_noaa('KFHU') #setup weather results ('location')
+	irc_msg("Sierra Vista current weather: " + weather['temp_f'] + "F and " + weather['weather'])
+	return
+	
+#information function
+def info():
+	website = "CochiseLinuxUsersGroup.github.io"  #CLUG website
+	mailing = "https://www.freelists.org/feed/cochiselinux" #CLUG mailing list feed
+	irc_msg( 'Website: ' + website )
+	irc_msg( 'Mailing archive: ' + mailing )
+	
+#help function
+def irchelp():
+	irc_msg( "Available commands: ")
+	irc_msg( "!info - Show website and mailing information")
+	irc_msg( "!lastmail - Show the title of the latest email to the mailing list")
+	irc_msg( "!lastpush - Show the last commits to github repos")
+	irc_msg( "!weather - Show current weather in sierra vista")
+	irc_msg( "more to come")
+	return
 		
-	for mail in mailing:
-		new_mail = feedparser.parse("https://www.freelists.org/feed/cochiselinux")
-		
-		try:
-			if ':!lastmail' in data.lower():
-				mail_msg = new_mail.entries[0].title
-				irc_msg( mail_msg )
-				return
-		except:
-			print "Do da"
-			print new_mail
-
-
 #Main Loop
 while True:
 	data = irc.recv ( 4096 )
@@ -115,37 +114,27 @@ while True:
 	if 'PING' in data:
 		irc.send( 'PONG ' + data.split()[1] + end )
 
-	#Display info for website and mailing list
-	if ':!info' in data.lower():
-		irc_msg( 'Website: ' + website )
-		irc_msg( 'Mailing archive: ' + mailing )
+	if ':!info' in data.lower(): #Display info for website and mailing list
+		print data
+		info()
+
 		
-	#Show last email title
-	#I want to make this more verbose
-	#Moved to for loop, if that breaks uncomment this ( bot will have to be restarted to update last mail if used this way )
-#	if ':!lastmail' in data.lower():
-#		len(d['entries'])
-#		irc_msg( 'Latest mail: ')
-#		irc_msg( d.feed.title )
-#		irc_msg( d['entries'][0]['title'] )
+	if ':!help' in data.lower(): #Display help functions, list available commands
+		print data
+		irchelp()
+			
+	if ':!lastmail' in data.lower(): #Lastmail function
+		print data
+		check_mail()
 	
-	
-	#Show current weather in SV	
-	if ':!weather' in data.lower():
-		irc_msg("Sierra Vista current weather: " + result['temp_f'] + "F and " + result['weather'])
+	if ':!lastpush' in data.lower(): #Lastpush function
+		print data
+		check_github()
 		
-	#Display help functions, list available commands
-	if ':!help' in data.lower():
-		irc_msg( "Available commands: ")
-		irc_msg( "!info - Show website and mailing information")
-		irc_msg( "!lastmail - Show the title of the latest email to the mailing list")
-		irc_msg( "!lastpush - Show the last commits to github repos")
-		irc_msg( "!weather - Show current weather in sierra vista")
-		irc_msg( "more to come")
-	
-	print data
-	check_github()
-	check_mail()
+	if ':!weather' in data.lower(): #Weather function
+		print data
+		check_weather()
+
 
 		
 
