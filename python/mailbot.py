@@ -4,7 +4,7 @@
 import feedparser, socket, time, pywapi, string
 
 #Connection info for IRC
-USER = 'CLUG_Helperbot'  #set bot name
+USER = 'CLUG_INFO'  #set bot name
 botname     = USER #+ "_bot"
 network     = 'irc.freenode.net' #set irc network to connect to
 chatchannel = '#cochiselinux' #set channel to connect to
@@ -41,7 +41,10 @@ def getuser():
 account_name = 'cochiselinuxusersgroup'
 branch = 'master'
 repo_names = ['cochiselinuxusersgroup.github.io', 'projectcode']
-def check_github():
+SLEEP_SECONDS = float(60*2.4)/len(repo_names)  # Check each repo once/couple minutes
+
+
+def force_check_github():
     old_version = {}
     for repo in repo_names:
         old_version[repo] = feedparser.parse(
@@ -63,7 +66,7 @@ def check_github():
         except:
             print "GitHub fucked up, I think. Here's what they gave us:"
             print new
-
+            
 # Mail function       
 def check_mail():
 	new_mail = feedparser.parse("https://www.freelists.org/feed/cochiselinux")
@@ -123,7 +126,6 @@ while True:
 	if ':!info' in data.lower(): #Display info for website and mailing list
 		print data
 		info()
-
 		
 	if ':!help' in data.lower(): #Display help functions, list available commands
 		print data
@@ -135,13 +137,13 @@ while True:
 	
 	if ':!lastpush' in data.lower(): #Lastpush function
 		print data
-		check_github()
+		force_check_github()
 		
 	if ':!weather' in data.lower(): #Weather function
 		print data
 		check_weather()
 		
-	if ':!nextevent' in data.lower():
+	if ':!nextevent' in data.lower(): #Calendar function
 		print data
 		calendar()
 
