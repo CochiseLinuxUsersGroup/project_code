@@ -8,19 +8,20 @@ td_date = datetime.date.today().strftime("%Y-%m-%d-")
 # if page statement
 if choice in {'Page', 'page'}:
 	new_page = raw_input("What is the title of the new page? ") #name of page
-	os.system("mkdir " + new_page) # create new directory for page
-	print 'Creating directory: ' + new_page 
-	os.system("touch " + new_page + "/" + "index.md") # create default index.md in dir
-	print 'Creating file: ' + new_page + '/' + 'index.md'
+	new_page_formatted = new_page.replace(" ", "_")
+	os.system("mkdir " + new_page_formatted) # create new directory for page
+	print 'Creating directory: ' + new_page_formatted 
+	os.system("touch " + new_page_formatted + "/" + "index.md") # create default index.md in dir
+	print 'Creating file: ' + new_page_formatted + '/' + 'index.md'
 	default_text = raw_input("Would you like to generate the default page config? [Yes/No]: ") # generate info into index.md y/n
-	pagemd = new_page + '/index.md' # set pagemd equal to newdir/index.md
+	pagemd = new_page_formatted + '/index.md' # set pagemd equal to newdir/index.md
 	
 	#if yes for generation
 	if default_text in {'Yes', 'yes', 'Y', 'y'}:
 		os.system("echo '---' > " + pagemd)
 		os.system("echo 'layout: page' >> " + pagemd)
 		os.system("echo 'title: ' " + new_page + ">> " + pagemd)
-		os.system("echo 'permalink: /" + new_page + "/' >> " + pagemd)
+		os.system("echo 'permalink: /" + new_page_formatted + "/' >> " + pagemd)
 		os.system("echo 'post-image: /img/clug_banner_1-compressor.jpg' >> " + pagemd)
 		os.system("echo '---' >> " + pagemd)
 		os.system("cat " + pagemd)
@@ -33,8 +34,9 @@ if choice in {'Page', 'page'}:
 # if post statement		
 elif choice in {'Post', 'post'}:
 	new_post = raw_input("Enter the new post title: ")
-	os.system("touch _posts/" + td_date + new_post + ".md") 
-	postmd = '_posts/' + td_date + new_post + '.md'
+	new_post_formatted = new_post.replace(" ", "-")
+	os.system("touch _posts/" + td_date + new_post_formatted + ".md") 
+	postmd = '_posts/' + td_date + new_post_formatted + '.md'
 	default_post = raw_input("Would you like to generate the default page config? [Yes/No]: ")
 	
 	if default_post in {'Yes', 'yes', 'Y', 'y'}:
