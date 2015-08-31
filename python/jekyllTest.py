@@ -1,5 +1,6 @@
 import os;
 import datetime;
+import subprocess;
 
 #Set choice as page or post
 choice = raw_input("Would you like to generate a new page or create a post? [Page/Post]: ")
@@ -26,6 +27,12 @@ if choice in {'Page', 'page'}:
 		os.system("echo '---' >> " + pagemd)
 		os.system("cat " + pagemd)
 		print 'Your new page can be found here: ' + pagemd
+		open_choice = raw_input('Would you like to open the new page to edit it further? [Yes/No] ')
+		
+		if open_choice in {'Yes', 'yes', 'Y', 'y'}:
+			os.system("xdg-open " + pagemd)
+		else:
+			print 'Ok we are done here'
 	
 	#if no for generation
 	if default_text in {'No', 'no', 'N', 'n'}:
